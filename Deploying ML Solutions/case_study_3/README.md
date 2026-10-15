@@ -159,6 +159,8 @@ On the holdout the centred rules reach macro F1 **0.8636** and generator recall 
 
 ## Features
 
+Feature engineering here is a procedure, not a bag of columns. Name the decision (the source at one stamp, for one sensor). Write the questions an engineer would ask, in hertz and volts. Turn each question into a formula that uses only that stamp and the recent past, and that the API can recompute from a phone's JSON. Check the formula on a flat 50 Hz line, where the trailing spread must be zero. Only then run it on the extract. The teaching notebook walks those steps on ten hand-made rows.
+
 Twenty-four columns, in `FEATURE_COLUMNS`. Anything the API serves is causal: at time *t* it may use readings at *t* and earlier, plus the site median of the current bucket (other sensors in the same two minutes, not the future).
 
 | Group | Columns | Role |
@@ -218,7 +220,9 @@ Boosting is the model that actually recovers generator. The logistic model is cl
 
 ### PCA
 
-Ten components, fit with `partial_fit` on every pre-holdout row, explain **86.87%** of the variance of the scaled features. The scree plot is `artifacts/figures/pca_scree.png`. Frequency, distance from 50 Hz, the trailing mean, and the site-median deviation are largely one signal, which is why the logistic-on-PCA model loses generator. The trees skip PCA and cut on Hertz directly. Thresholds in Hertz are also easier to audit than a component score.
+PCA is the dimensionality reduction step. Each row of 24 scaled features is rewritten as fewer scores. The first score is the row's position along the direction where the rows spread out the most. The next score is at right angles to that, so it describes something the first score left out. Scaling comes first: a frequency near 50 and a 0/1 flag are put on the same footing, or the large numbers would choose the axes alone.
+
+A loading says how hard an original column pulls on a score. The scree plot says what share of the spread each score keeps. Ten components, fit with `partial_fit` on every pre-holdout row, explain **86.87%** of the variance of the scaled features. The scree plot is `artifacts/figures/pca_scree.png`. The other 13% is the part `sgd_pca` agrees to drop. Frequency, distance from 50 Hz, the trailing mean, and the site-median deviation are largely one signal, which is why that logistic-on-PCA model loses generator. The trees skip PCA and cut on Hertz directly. Thresholds in Hertz are also easier to audit than a component score. The notebook shows the same idea first on two columns that are copies of each other: one score keeps essentially all of their spread.
 
 ### Temporal cross-validation
 
