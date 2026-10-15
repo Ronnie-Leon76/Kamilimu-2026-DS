@@ -31,9 +31,14 @@ def _find_csv() -> Path | None:
     if override and Path(override).exists():
         return Path(override)
     named: list[Path] = []
-    # parents[2] of case_study_3 is the repository root.
-    repo = _case_dir().parents[2] if len(_case_dir().parents) > 2 else _case_dir()
-    roots = [Path("/kaggle/input"), repo]
+    # parents[1] of case_study_3 is the repository root.
+    repo = _case_dir().parents[1] if len(_case_dir().parents) > 1 else _case_dir()
+    roots = [
+        Path("/kaggle/input"),
+        Path("/content/drive/MyDrive"),
+        Path("/content"),
+        repo,
+    ]
     for root in roots:
         if root.exists():
             named.extend(root.rglob("labeled_power_source_data.csv"))

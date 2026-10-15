@@ -113,9 +113,13 @@ FEATURE_COLUMNS = [
 
 def _search_roots() -> list[Path]:
     roots = []
-    kaggle = Path("/kaggle/input")
-    if kaggle.exists():
-        roots.append(kaggle)
+    for candidate in (
+        Path("/kaggle/input"),
+        Path("/content/drive/MyDrive"),
+        Path("/content"),
+    ):
+        if candidate.exists():
+            roots.append(candidate)
     roots.append(REPO_ROOT)
     return roots
 
@@ -166,6 +170,6 @@ def resolve_csv_path() -> Path:
     )
     raise FileNotFoundError(
         "Could not find labeled_power_source_data.csv. "
-        f"Looked for {expected} and under /kaggle/input. "
+        f"Looked for {expected}, under /kaggle/input, and under /content. "
         "Set POWER_SOURCE_CSV to the file."
     )
