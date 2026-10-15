@@ -305,6 +305,24 @@ On the holdout, each gap is given to the earlier reading and capped at 30 minute
 
 By site, label hours versus model hours: bonthe 20 / 22, kabala 161 / 192, kambia 90 / 96, masanga 111 / 119, ola_during 0 / 4, princess_christian 0 / 2. The last two are the hospitals whose smoothing rules suppress generator. The per-room table is `artifacts/usage_durations.csv` (31 rooms have a holdout interval; not every one of the 35 sensors does).
 
+## joblib, in one sitting
+
+A fitted model is a Python object in memory. Close the laptop and it is gone. [joblib](https://joblib.readthedocs.io/) writes that object to a file and reads it back:
+
+```python
+import joblib
+joblib.dump(bundle, "model.joblib")
+bundle = joblib.load("model.joblib")
+```
+
+JSON can store the metrics and the figures' numbers. It cannot store a fitted `HistGradientBoostingClassifier` and hand you back a classifier. `pickle` can, and joblib is built on pickle. The extra joblib gives you is large NumPy arrays, written as one block instead of one number at a time. A boosting model is mostly arrays, which is why scikit-learn's own model files use joblib.
+
+`artifacts/model.joblib` is a dictionary, not a single estimator. The keys a mentee should be able to name are `hgb`, `rf`, `sgd`, `sgd_pca`, `scaler`, `pca`, `classes`, `feature_names`, and `sklearn_version`. The API calls `joblib.load` once at startup and serves that dictionary. `online_model_init.joblib` is the logistic model as training left it. `online_model.joblib` is the copy `POST /online/update` is allowed to dump again. The RNN and LSTM weights stay in `.npz` files, because those models are plain NumPy arrays.
+
+Load this file with the same scikit-learn that wrote it (1.9.0). A `.joblib` file is a pickle, so load files this training run produced.
+
+The teaching notebook has a short joblib 101, with a toy `dump` / `load` and then a look inside the real file, just before the deployment section.
+
 ## The API
 
 `service/api.py`. The image and the local process both listen on port **8010**, so this service does not collide with the house-price app in the parent `app/` folder. Leave that app alone.
