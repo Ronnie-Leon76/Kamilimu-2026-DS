@@ -146,8 +146,7 @@ notebook/templates/*.html
 .pixi
 *.egg-info
 
-# Temporary files used for testing
-tmp/
+Deploying ML Solutions/case_study_3/work/
 
 # Secrets and local runtime files
 .env
